@@ -40,4 +40,4 @@ services:
             - MINIO_ROOT_PASSWORD=minioAccEducacion
         command: server /data --console-address ":9001"
         volumes:
-            - /data/minio:/data
+            - ./data/minio:/data
