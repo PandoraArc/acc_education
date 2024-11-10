@@ -71,3 +71,6 @@ docker compose down
 - localhost:8080/api - api
 - localhost:8080/api/docs - api document
 
+## Architecture
+![](./architecture.png)
+
