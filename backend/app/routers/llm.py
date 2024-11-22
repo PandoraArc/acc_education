@@ -21,8 +21,8 @@ def encode_image(image_path):
 
 model = AzureChatOpenAI(
     azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
-    azure_deployment=settings.AZURE_OPENAI_KEY,
-    openai_api_version=settings.AZURE_OPENAI_API_VERSION,
+    openai_api_key=settings.AZURE_OPENAI_KEY,
+    openai_api_version=settings.AZURE_OPENAI_API_VERSION,   
 )
 
 
