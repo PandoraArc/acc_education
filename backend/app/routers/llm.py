@@ -3,12 +3,14 @@ import logging
 import os
 from pathlib import Path
 
+from app.config import Settings
 from fastapi import APIRouter
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import AzureChatOpenAI
 
 router = APIRouter()
+settings = Settings()
 logger = logging.getLogger(__name__)
 
 
@@ -18,9 +20,9 @@ def encode_image(image_path):
 
 
 model = AzureChatOpenAI(
-    azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-    azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT_NAME"],
-    openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
+    azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+    azure_deployment=settings.AZURE_OPENAI_KEY,
+    openai_api_version=settings.AZURE_OPENAI_API_VERSION,
 )
 
 

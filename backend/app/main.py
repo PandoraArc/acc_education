@@ -1,12 +1,9 @@
 # cd backend
 # uvicorn app.main:app --reload
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from app.routers import llm, minio
-
-load_dotenv()
 
 # API section
 ROOT_PATH = "/api"
