@@ -5,7 +5,7 @@ from pathlib import Path
 
 from app.config import Settings
 from fastapi import APIRouter
-from app.models.llm_model import AnswerResponse
+from app.models.llm_model import AnswerResponse, QuestionGradeIn
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_openai import AzureChatOpenAI
@@ -92,11 +92,9 @@ async def chat_vision():
     return parser_output
 
 
-@router.get("/grading")
-def grading(
-    question: str,
-    answer: str,
-):
+@router.post("/grading")
+def grading( question_grade_in: QuestionGradeIn):
+
     sys_prompt = """
         "You are an AI language model trained to evaluate students' financial exams based on specific grading criteria.
         The question and answer might be in Thai or English language.
@@ -125,10 +123,9 @@ def grading(
 
         {"properties": {"score": {"description": "Score of the the student. The full score being 5", "title": "Score", "type": "string"}, "reason": {"description": "Reseaon why the student got the score", "title": "Reason", "type": "string"}}, "required": ["score", "reason"]}
     """
-    
     # For testing
     # answer = """
-    #     \n\n**Student's Answer:**\n\n**ขั้นตอนที่ 1:** คำนวณหาค่าใช้จ่ายหลังเกษียณ (FV) ดังนี้\n\n```\nCMPD\nMODE : END/ BGN\nN : 60-49 = 11\ni : 3\nPV : -360,000\nPMT : 0\nFV : CPT : 498,324.19 — Ans.\n```\n\n**ขั้นตอนที่ 2:** คำนวณหาเงินเกษียณ ณ อายุเกษียณ (PV) ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 85-60 = 25\ni: \\(\\left( \\frac{1+0.02}{1+0.03} - 1 \\right) \\times 100 = -0.9708\\)\nPV: CPT : -14,039,990.26 — Ans.\nPMT: 498,324.19\nFV: 0\n```\n\n**ขั้นตอนที่ 3:** นำทรัพย์สินที่มีอยู่แล้ว\n\n**3.1:** มูลค่าเงินลงทุนรวม ณ อายุเกษียณ (FV) ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 11\ni: 5\nPV: -350,000\nPMT: -60,000\nFV: CPT: 1,493,646.37 — Ans.\n```\n\n**3.2:** คำนวณมูลค่ากองทุนสำรองเลี้ยงชีพ (เดิม) ดังนี้\n\n```\nCMPD\nMODE: END/ BGN\nN: 11\ni: 2.5\nPV: -275,000\nPMT: 0\nFV: CPT: 360,823.83 — Ans.\n```\n\n**3.3:** คำนวณหามูลค่าอนาคต (FV) ของกองทุนสำรองเลี้ยงชีพ ดังนี้\n\n```\nFV = A(1+i) \\left[ \\frac{(1+i)^n - (1+g)^n}{i-g} \\right]\n= 62400(1.025) \\left[ \\frac{(1.025)^{11} - (1.04)^{11}}{0.025 - 0.04} \\right]\n= 62400(1.025) \\left[ \\frac{1.3121 - 1.5349}{-0.015} \\right]\n= 62400(1.025) \\left( -14.9333 \\right)\n= 969,633.60 — Ans.\n```\n\nรวมสินทรัพย์ที่มีอยู่แล้ว ณ วันเกษียณ คือ\n\n```\n1,493,646.37 + 360,823.83 + 949,633.60 + 1,200,000 = 4,024,103.80 — Ans.\n```\n\n**ขั้นตอนที่ 4:** คำนวณเงินเกษียณที่ยังขาดอยู่ ดังนี้\n\n```\n14,039,990.26 - 4,024,103.80 = 10,015,886.46 — Ans.\n```\n\n**ขั้นตอนที่ 5:** คำนวณเงินที่ต้องออม/ลงทุนในส่วนที่ขาด ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 11\ni: 5\nPV: 0\nPMT: CPT: -674,435.38 — Ans.\nFV: 10,015,886.46\n```\n\n**สรุป** คุณสมชาย ควรมีเงินเกษียณ 14,039,990.26 บาท โดยรวมสินทรัพย์ที่มีอยู่แล้ว 4,024,103.80 บาท ยังขาดอยู่ 10,015,886.46 บาท ต้องลงทุนเพิ่มปีละ 674,435.38 บาท\n\n### Task 2: Scoring and Reasoning\n\n**Score: 4**\n\n
+    #     \n\n**Student's Answer:**\n\n**ขั้นตอนที่ 1:** คำนวณหาค่าใช้จ่ายหลังเกษียณ (FV) ดังนี้\n\n```\nCMPD\nMODE : END/ BGN\nN : 60-49 = 11\ni : 3\nPV : -360,000\nPMT : 0\nFV : CPT : 498,324.19 — Ans.\n```\n\n**ขั้นตอนที่ 2:** คำนวณหาเงินเกษียณ ณ อายุเกษียณ (PV) ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 85-60 = 25\ni: \\(\\left( \\frac{1+0.02}{1+0.03} - 1 \\right) \\times 100 = -0.9708\\)\nPV: CPT : -14,039,990.26 — Ans.\nPMT: 498,324.19\nFV: 0\n```\n\n**ขั้นตอนที่ 3:** นำทรัพย์สินที่มีอยู่แล้ว\n\n**3.1:** มูลค่าเงินลงทุนรวม ณ อายุเกษียณ (FV) ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 11\ni: 5\nPV: -350,000\nPMT: -60,000\nFV: CPT: 1,493,646.37 — Ans.\n```\n\n**3.2:** คำนวณมูลค่ากองทุนสำรองเลี้ยงชีพ (เดิม) ดังนี้\n\n```\nCMPD\nMODE: END/ BGN\nN: 11\ni: 2.5\nPV: -275,000\nPMT: 0\nFV: CPT: 360,823.83 — Ans.\n```\n\n**3.3:** คำนวณหามูลค่าอนาคต (FV) ของกองทุนสำรองเลี้ยงชีพ ดังนี้\n\n```\nFV = A(1+i) \\left[ \\frac{(1+i)^n - (1+g)^n}{i-g} \\right]\n= 62400(1.025) \\left[ \\frac{(1.025)^{11} - (1.04)^{11}}{0.025 - 0.04} \\right]\n= 62400(1.025) \\left[ \\frac{1.3121 - 1.5349}{-0.015} \\right]\n= 62400(1.025) \\left( -14.9333 \\right)\n= 969,633.60 — Ans.\n```\n\nรวมสินทรัพย์ที่มีอยู่แล้ว ณ วันเกษียณ คือ\n\n```\n1,493,646.37 + 360,823.83 + 949,633.60 + 1,200,000 = 4,024,103.80 — Ans.\n```\n\n**ขั้นตอนที่ 4:** คำนวณเงินเกษียณที่ยังขาดอยู่ ดังนี้\n\n```\n14,039,990.26 - 4,024,103.80 = 10,015,886.46 — Ans.\n```\n\n**ขั้นตอนที่ 5:** คำนวณเงินที่ต้องออม/ลงทุนในส่วนที่ขาด ดังนี้\n\n```\nCMPD\nMODE: BGN\nN: 11\ni: 5\nPV: 0\nPMT: CPT: -674,435.38 — Ans.\nFV: 10,015,886.46\n```\n\n**สรุป** คุณสมชาย ควรมีเงินเกษียณ 14,039,990.26 บาท โดยรวมสินทรัพย์ที่มีอยู่แล้ว 4,024,103.80 บาท ยังขาดอยู่ 10,015,886.46 บาท ต้องลงทุนเพิ่มปีละ 674,435.38 บาท\n\n###
     # """
 
     # question = """
@@ -140,11 +137,15 @@ def grading(
     #     - ผลตอบแทนจากการลงทุนก่อนเกษียณ = 5%
     #     - ผลตอบแทนจากการลงทุนก่อนเกษียณ = 2%
     # """
-
+    
+    human_message = f"""
+        question: {question_grade_in.question}
+        answer: {question_grade_in.answer}
+    """
+    
     messages = [
         SystemMessage(content=sys_prompt),
-        HumanMessage(content=question),
-        HumanMessage(content=answer),
+        HumanMessage(content=human_message)
     ]
     
     result = model.invoke(messages)
