@@ -1,57 +1,58 @@
+'use client';
+
 import React from 'react';
+import { Form, Input, Button, Card, Typography } from 'antd';
+import useHome from './useHome';
+
+const { Title, Paragraph } = Typography;
 
 const HomePage = () => {
-  const styles = {
-    container: {
-      fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-      textAlign: 'center',
-      color: '#333',
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      margin: '0',
-    },
-    header: {
-      backgroundColor: '#f8f8f8',
-      color: '#333',
-      padding: '20px 0',
-      borderBottom: '1px solid #e0e0e0',
-    },
-    main: {
-      flex: '1',
-      padding: '60px 20px',
-      backgroundColor: '#ffffff',
-    },
-    footer: {
-      backgroundColor: '#f8f8f8',
-      color: '#333',
-      padding: '20px 0',
-      borderTop: '1px solid #e0e0e0',
-    },
-    h1: {
-      fontSize: '3rem',
-      margin: '0',
-      fontWeight: '300',
-    },
-    p: {
-      fontSize: '1.25rem',
-      margin: '20px 0',
-      lineHeight: '1.6',
-    },
-  };
+
+  const { reason, score, isloading, analyze} = useHome();
+  const [form] = Form.useForm();
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.h1}>Welcome to ACC Education</h1>
-      </header>
-      <main style={styles.main}>
-        <p style={styles.p}>This is the prototype home page.</p>
-      </main>
-      <footer style={styles.footer}>
-        <p>&copy; 2023 ACC Education. All rights reserved.</p>
-      </footer>
-    </div>
+    <Card style={{ width: '80%', margin: 'auto', marginTop: '50px' }}>
+      <Form
+        onFinish={analyze}
+        form={form}
+        layout="vertical"
+      >
+        <Form.Item 
+          label="Question"
+          name="question"
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+          >
+          <Input.TextArea rows={4} />
+        </Form.Item>
+        <Form.Item 
+          label="Answer"
+          name="answer"
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+          >
+          <Input.TextArea rows={4} />
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType='submit' block loading={isloading}>Analyze</Button>
+        </Form.Item>
+      </Form>
+
+      {score !== null && reason !== null && (
+        <Card style={{ marginTop: '20px' }}>
+          <Title level={3}>Analyzed Result</Title>
+          <Paragraph><strong>Score:</strong> {score}</Paragraph>
+          <Paragraph><strong>Reason:</strong> {reason}</Paragraph>
+        </Card>
+      )}
+    </Card>
   );
 };
 
