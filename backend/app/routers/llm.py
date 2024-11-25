@@ -1,14 +1,17 @@
 import base64
 import logging
 import os
+import chromadb
 from pathlib import Path
 
 from app.config import Settings
+from app.models.llm_model import AnswerResponse, ChatIn, QuestionGradeIn
 from fastapi import APIRouter
-from app.models.llm_model import AnswerResponse, QuestionGradeIn
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-from langchain_openai import AzureChatOpenAI
+from langchain_chroma import Chroma
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
+
 
 router = APIRouter()
 settings = Settings()
@@ -26,12 +29,39 @@ model = AzureChatOpenAI(
     openai_api_version=settings.AZURE_OPENAI_API_VERSION,
 )
 
+embeddings: AzureOpenAIEmbeddings = AzureOpenAIEmbeddings(
+    azure_deployment=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
+    openai_api_version=settings.AZURE_OPENAI_EMBEDDING_API_VERSION,
+    azure_endpoint=settings.AZURE_OPENAI_EMBEDDING_ENDPOINT,
+    api_key=settings.AZURE_OPENAI_EMBEDDING_KEY,
+)
+
+vector_store = Chroma(
+    collection_name="vat_manual",
+    embedding_function=embeddings,
+    persist_directory='./app/chroma-db',
+)
 
 @router.post("/chat")
-async def chat(user_message: str):
+async def chat(chat_in: ChatIn):
+    
+    results = vector_store.similarity_search(chat_in.human_message, k=5)
+    context = ""
+    for res in results:
+        context += f"""
+            -----------------------------
+            source: "คู่มือภาษีเงินได้บุคคลธรรมดา"
+            page: {res.metadata['page'] + 2}
+            content: {res.page_content}
+            ------------------------------\n
+        """
+
     messages = [
-        SystemMessage(content="You are a helpful assistant."),
-        HumanMessage(content=user_message),
+        SystemMessage(content=chat_in.system_message),
+        HumanMessage(content=f"""
+            context: {context}
+            question: {chat_in.human_message}
+        """),
     ]
 
     result = model.invoke(messages)
@@ -41,55 +71,71 @@ async def chat(user_message: str):
     return {"message": parser_output}
 
 
-@router.get("/chat-vision")
-async def chat_vision():
-    img_agg = [
-        {"type": "text", "text": "Here are the images of the question and answer"},
-    ]
-    folder_dir = "./app/test_jpg"
-
-    images = Path(folder_dir).glob("*.jpg")
-
-    for image in images:
-        base64_image = encode_image(image)
-
-        img_agg.append(
-            {
-                "type": "image_url",
-                "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-            }
-        )
-
-    sys_prompt = """
-    You are an AI language model trained to evaluate students' financial exams based on specific grading criteria.
-    The question and answer might be in Thai or English language.
-    Your task is as follows:
-
-    Task 1 Read Input: Extract the question and student answer from an input image (JPG format). The text extracted should include both the question and the student's response.
-    Scoring: Assess the student's answer based on the following scale:
-
-    0: The answer is completely incorrect or irrelevant.
-    1: The answer shows minimal understanding, with major inaccuracies.
-    2: The answer demonstrates some understanding, but there are significant errors or omissions.
-    3: The answer is mostly correct, with minor errors or incomplete explanations.
-    4: The answer is correct with only very minor inaccuracies or a slight lack of depth.
-    5: The answer is fully accurate, complete, and well-explained.
-
-    Task 2 Reasoning: Provide a detailed explanation of why the given score was assigned, including identification of errors, areas of incomplete analysis, or strengths in the response.
-    You should evaluate based on the core financial concepts, accuracy of calculations, logical coherence, and relevance to the question asked. Be fair, objective, and detailed in your reasoning.
-
-    """
-
+@router.post("/chat-rag")
+async def chat_rag(chat_in: ChatIn):
+    
     messages = [
-        SystemMessage(content=sys_prompt),
-        HumanMessage(content=img_agg),
+        SystemMessage(content=chat_in.system_message),
+        HumanMessage(content=chat_in.human_message)
     ]
-
+    
     result = model.invoke(messages)
     parser = StrOutputParser()
     parser_output = parser.invoke(result)
+    
+    return {"message": parser_output}
 
-    return parser_output
+
+@router.get("/chat-vision")
+async def chat_vision():
+    # img_agg = [
+    #     {"type": "text", "text": "Here are the images of the question and answer"},
+    # ]
+    # folder_dir = "./app/test_jpg"
+
+    # images = Path(folder_dir).glob("*.jpg")
+
+    # for image in images:
+    #     base64_image = encode_image(image)
+
+    #     img_agg.append(
+    #         {
+    #             "type": "image_url",
+    #             "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+    #         }
+    #     )
+
+    # sys_prompt = """
+    # You are an AI language model trained to evaluate students' financial exams based on specific grading criteria.
+    # The question and answer might be in Thai or English language.
+    # Your task is as follows:
+
+    # Task 1 Read Input: Extract the question and student answer from an input image (JPG format). The text extracted should include both the question and the student's response.
+    # Scoring: Assess the student's answer based on the following scale:
+
+    # 0: The answer is completely incorrect or irrelevant.
+    # 1: The answer shows minimal understanding, with major inaccuracies.
+    # 2: The answer demonstrates some understanding, but there are significant errors or omissions.
+    # 3: The answer is mostly correct, with minor errors or incomplete explanations.
+    # 4: The answer is correct with only very minor inaccuracies or a slight lack of depth.
+    # 5: The answer is fully accurate, complete, and well-explained.
+
+    # Task 2 Reasoning: Provide a detailed explanation of why the given score was assigned, including identification of errors, areas of incomplete analysis, or strengths in the response.
+    # You should evaluate based on the core financial concepts, accuracy of calculations, logical coherence, and relevance to the question asked. Be fair, objective, and detailed in your reasoning.
+
+    # """
+
+    # messages = [
+    #     SystemMessage(content=sys_prompt),
+    #     HumanMessage(content=img_agg),
+    # ]
+
+    # result = model.invoke(messages)
+    # parser = StrOutputParser()
+    # parser_output = parser.invoke(result)
+
+    # return parser_output
+    return {"message": "Not implemented"}
 
 
 @router.post("/grading")
