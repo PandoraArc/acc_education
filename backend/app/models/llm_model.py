@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
 from langchain_chroma import Chroma
-from app.config import settings
+from app.config import Settings
 
 class ChatIn(BaseModel):
   system_message: str = Field(description="The system message that the AI model sends to the user")
@@ -23,6 +23,8 @@ class GradeResponse(BaseModel):
 class ModelResource():
   
   def __init__(self) -> None:
+    
+    settings = Settings()
     
     if os.path.exists('./app/data/chroma-db'):
       url = "https://drive.google.com/drive/folders/1sCiLckoqh565JfxVgayrt2quDlOZE1i4"
