@@ -1,0 +1,29 @@
+services:
+    ingress:
+        image: acceducation.azurecr.io/ingress:latest
+        ports: 
+            - "80:80"
+        links:
+            - api
+            - web    
+    web:
+        image: acceducation.azurecr.io/web:latest
+        expose:
+            - 3000
+
+    api:
+        image: acceducation.azurecr.io/api:latest
+        expose:
+            - 80
+        environment:
+            - RUN_ENV=DEVELOPMENT
+
+    # minio: 
+    #     image: quay.io/minio/minio
+    #     ports:
+    #         - "9000:9000"
+    #         - "9001:9001"
+    #     environment: 
+    #         - MINIO_ROOT_USER=minio
+    #         - MINIO_ROOT_PASSWORD=minioAccEducacion
+    #     command: server /data --console-address ":9001"
