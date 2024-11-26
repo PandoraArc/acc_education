@@ -10,4 +10,4 @@ class Settings(BaseSettings):
     AZURE_OPENAI_EMBEDDING_KEY: str = ''
     AZURE_OPENAI_EMBEDDING_API_VERSION: str = ''
     
-    model_config = SettingsConfigDict(env_file="env")
+    model_config = SettingsConfigDict(env_file=".env")
