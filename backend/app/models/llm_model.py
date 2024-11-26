@@ -26,10 +26,10 @@ class ModelResource():
     
     settings = Settings()
     
-    if os.path.exists('./app/data/chroma-db'):
-      url = "https://drive.google.com/drive/folders/1sCiLckoqh565JfxVgayrt2quDlOZE1i4"
-      output = "./app/data/chroma-db"
-      gdown.download(url, output, quiet=False)
+    if not os.path.exists('./data/chroma-db'):
+      id = "1YJ8WKdOs0lUCedGDaVHV6WrvhuzXikA2"
+      output = "./data/chroma-db"
+      gdown.download_folder(id=id, output=output, quiet=False)
     
     self.model = AzureChatOpenAI(
       azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
@@ -43,11 +43,11 @@ class ModelResource():
       azure_endpoint=settings.AZURE_OPENAI_EMBEDDING_ENDPOINT,
       api_key=settings.AZURE_OPENAI_EMBEDDING_KEY,
     )
-            
+    
     self.vector_store = Chroma(
       collection_name="vat_manual",
       embedding_function=self.embeddings,
-      persist_directory='./app/chroma-db',
+      persist_directory='./data/chroma-db',
     )
     
   def encode_image(image_path):
