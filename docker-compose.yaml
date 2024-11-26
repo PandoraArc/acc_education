@@ -23,10 +23,12 @@ services:
         build: ./backend
         expose:
             - 80
+        command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
         environment:
             - RUN_ENV=DEVELOPMENT
         volumes:
-            - ./backend:/app
+            - ./backend/app:/app
+            - ./backend/.env:/.env
             - ./data/backend:/app/data
 
     minio: 
