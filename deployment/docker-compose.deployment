@@ -1,18 +1,18 @@
 services:
     ingress:
-        image: acceducation.azurecr.io/ingress:latest
+        image: acceducation.azurecr.io/ingress:0.0.1
         ports: 
             - "80:80"
         links:
             - api
             - web    
     web:
-        image: acceducation.azurecr.io/web:latest
+        image: acceducation.azurecr.io/web:0.0.1
         expose:
             - 3000
 
     api:
-        image: acceducation.azurecr.io/api:latest
+        image: acceducation.azurecr.io/api:0.0.1
         expose:
             - 80
         environment:
