@@ -1,17 +1,17 @@
 services:
     ingress:
-        image: nginx:stable-alpine
+        build: ./ingress
         ports: 
             - "8080:80"
         links:
             - api
             - web
         volumes: 
-            - ./etc/nginx:/etc/nginx/conf.d
+            - ./ingress/etc/nginx:/etc/nginx/conf.d
             - ./data/ingress:/data/
     
     web:
-        image: node:20
+        build: ./frontend
         working_dir: /app
         command: ["bash", "./start-dev.sh"]
         volumes:
@@ -28,7 +28,6 @@ services:
         volumes:
             - ./backend:/app
             - ./data/backend:/app/data
-        working_dir: /app
 
     minio: 
         image: quay.io/minio/minio
