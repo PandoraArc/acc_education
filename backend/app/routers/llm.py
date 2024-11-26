@@ -1,89 +1,49 @@
-import base64
 import logging
-import os
-import chromadb
 from pathlib import Path
 
 from app.config import Settings
-from app.models.llm_model import AnswerResponse, ChatIn, QuestionGradeIn
+from app.models.llm_model import GradeIn, GradeResponse, ChatIn, ModelResource
 from fastapi import APIRouter
-from langchain_chroma import Chroma
-from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
-from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 
 
 router = APIRouter()
 settings = Settings()
+model_resource = ModelResource()
 logger = logging.getLogger(__name__)
 
 
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
-
-
-model = AzureChatOpenAI(
-    azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
-    openai_api_key=settings.AZURE_OPENAI_KEY,
-    openai_api_version=settings.AZURE_OPENAI_API_VERSION,
-)
-
-embeddings: AzureOpenAIEmbeddings = AzureOpenAIEmbeddings(
-    azure_deployment=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
-    openai_api_version=settings.AZURE_OPENAI_EMBEDDING_API_VERSION,
-    azure_endpoint=settings.AZURE_OPENAI_EMBEDDING_ENDPOINT,
-    api_key=settings.AZURE_OPENAI_EMBEDDING_KEY,
-)
-
-vector_store = Chroma(
-    collection_name="vat_manual",
-    embedding_function=embeddings,
-    persist_directory='./app/chroma-db',
-)
-
 @router.post("/chat")
 async def chat(chat_in: ChatIn):
+    try:
+        result = model_resource.invoke(
+            system_message=chat_in.system_message,
+            human_message=chat_in.human_message
+        )
+        parser = StrOutputParser()
+        parser_output = parser.invoke(result)
+        return {"message": parser_output}
     
-    results = vector_store.similarity_search(chat_in.human_message, k=5)
-    context = ""
-    for res in results:
-        context += f"""
-            -----------------------------
-            source: "คู่มือภาษีเงินได้บุคคลธรรมดา"
-            page: {res.metadata['page'] + 2}
-            content: {res.page_content}
-            ------------------------------\n
-        """
-
-    messages = [
-        SystemMessage(content=chat_in.system_message),
-        HumanMessage(content=f"""
-            context: {context}
-            question: {chat_in.human_message}
-        """),
-    ]
-
-    result = model.invoke(messages)
-    parser = StrOutputParser()
-    parser_output = parser.invoke(result)
-
-    return {"message": parser_output}
+    except Exception as e:
+        logger.error(e)
+        return {"message": f"An error occurred {e}"}
 
 
 @router.post("/chat-rag")
 async def chat_rag(chat_in: ChatIn):
+    try:
+        result = model_resource.invoke_with_rag(
+            rag_message=chat_in.human_message,
+            human_message=chat_in.human_message,
+            system_message=chat_in.system_message
+        )
+        parser = StrOutputParser()
+        parser_output = parser.invoke(result)
+        return {"message": parser_output}
     
-    messages = [
-        SystemMessage(content=chat_in.system_message),
-        HumanMessage(content=chat_in.human_message)
-    ]
-    
-    result = model.invoke(messages)
-    parser = StrOutputParser()
-    parser_output = parser.invoke(result)
-    
-    return {"message": parser_output}
+    except Exception as e:
+        logger.error(e)
+        return {"message": f"An error occurred {e}"}
 
 
 @router.get("/chat-vision")
@@ -138,8 +98,8 @@ async def chat_vision():
     return {"message": "Not implemented"}
 
 
-@router.post("/grading")
-def grading( question_grade_in: QuestionGradeIn):
+@router.post("/grading", response_model=GradeResponse)
+def grading( grade_in: GradeIn):
 
     sys_prompt = """
         "You are an AI language model trained to evaluate students' financial exams based on specific grading criteria.
@@ -185,17 +145,14 @@ def grading( question_grade_in: QuestionGradeIn):
     # """
     
     human_message = f"""
-        question: {question_grade_in.question}
-        answer: {question_grade_in.answer}
+        question: {grade_in.question}
+        answer: {grade_in.answer}
     """
-    
-    messages = [
-        SystemMessage(content=sys_prompt),
-        HumanMessage(content=human_message)
-    ]
-    
-    result = model.invoke(messages)
-    parser = JsonOutputParser(pydantic_object=AnswerResponse)
+    result = model_resource.invoke(
+        system_message=sys_prompt,
+        human_message=human_message
+    )
+    parser = JsonOutputParser(pydantic_object=GradeResponse)
     parser_output = parser.invoke(result)
 
     return parser_output
