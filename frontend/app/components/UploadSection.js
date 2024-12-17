@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Upload, Button, List, Tag, Space, message } from "antd";
+import { Upload, Button, List, Spin, message } from "antd";
 import UploadIcon from "@/public/icon/UploadIcon";
 import BinIcon from "@/public/icon/BinIcon";
 import ClipIcon from "@/public/icon/ClipIcon";
@@ -12,9 +12,11 @@ const UploadSection = () => {
     //     { key: "2", name: "ข้อสอบการเงินของนางฉลา", time: "10:55AM", date: "10 พ.ย. 2567", status: "อัปโหลดแล้ว" },
     // ]);
 
+    const [isLoading, setIsLoading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const handleUpload = (info) => {
         const { file } = info;
+        setIsLoading(true);
 
         if (file.status === "done") {
             const newFile = {
@@ -26,8 +28,10 @@ const UploadSection = () => {
             };
             setUploadedFiles((prevFiles) => [...prevFiles, newFile]);
             message.success(`${file.name} อัปโหลดสำเร็จแล้ว`);
+            setIsLoading(false);
         } else if (file.status === "error") {
             message.error(`${file.name} อัปโหลดไม่สำเร็จ`);
+            setIsLoading(false);
         }
     };
 
@@ -97,7 +101,6 @@ const UploadSection = () => {
 
     return (
         <div style={{ padding: "32px", backgroundColor: '#FBFCFE', borderRadius: "8px" }}>
-
             <div
                 style={{
                     display: "flex",
@@ -135,100 +138,103 @@ const UploadSection = () => {
                     คุณสามารถอัพโหลดไฟล์ข้อสอบที่ต้องการตรวจสอบ
                 </span>
             </div>
-
-            <Upload.Dragger
-                multiple
-                showUploadList={false}
-                customRequest={({ file, onSuccess }) => {
-                    setTimeout(() => onSuccess("ok"), 1000);
-                }}
-                onChange={handleUpload}
-                accept=".jpg,.jpeg,.png,.heic,.pdf"
-                style={{ background: "#FBFCFE", borderRadius: "8px" }}
+            <Spin
+                spinning={isLoading}
             >
-                {uploadedFiles.length > 0
-                    ? (
-                        <>
-                            <List
-                                dataSource={uploadedFiles}
-                                itemLayout="horizontal"
-                                style={{
-                                    margin: "12px 12px 8px 12px",
-                                    backgroundColor: '#FBFCFE',
-                                    textAlign: "left"
-                                }}
-                                renderItem={(item, index) => (
-                                    <List.Item
-                                        actions={[
-                                            <div
-                                                style={{ display: "flex", gap: "20px", alignItems: "center" }}
-                                            >
-                                                <div>
-                                                    <span style={{
-                                                        fontWeight: 500,
-                                                        fontSize: "16px",
-                                                        padding: "17.6px 10px",
-                                                        color: "#000000"
-                                                    }}>
-                                                        {item.time}
-                                                    </span>
-                                                    <span
-                                                        style={{
+                <Upload.Dragger
+                    multiple
+                    showUploadList={false}
+                    customRequest={({ file, onSuccess }) => {
+                        setTimeout(() => onSuccess("ok"), 1000);
+                    }}
+                    onChange={handleUpload}
+                    accept=".jpg,.jpeg,.png,.heic,.pdf"
+                    style={{ background: "#FBFCFE", borderRadius: "8px" }}
+                >
+                    {uploadedFiles.length > 0
+                        ? (
+                            <>
+                                <List
+                                    dataSource={uploadedFiles}
+                                    itemLayout="horizontal"
+                                    style={{
+                                        margin: "12px 12px 8px 12px",
+                                        backgroundColor: '#FBFCFE',
+                                        textAlign: "left"
+                                    }}
+                                    renderItem={(item, index) => (
+                                        <List.Item
+                                            actions={[
+                                                <div
+                                                    style={{ display: "flex", gap: "20px", alignItems: "center" }}
+                                                >
+                                                    <div>
+                                                        <span style={{
                                                             fontWeight: 500,
-                                                            color: "#EBEBEB"
+                                                            fontSize: "16px",
+                                                            padding: "17.6px 10px",
+                                                            color: "#000000"
+                                                        }}>
+                                                            {item.time}
+                                                        </span>
+                                                        <span
+                                                            style={{
+                                                                fontWeight: 500,
+                                                                color: "#EBEBEB"
+                                                            }}
+                                                        >
+                                                            |
+                                                        </span>
+                                                        <span style={{
+                                                            fontWeight: 500,
+                                                            fontSize: "16px",
+                                                            padding: "17.6px 10px",
+                                                            color: "#000000"
+                                                        }}>
+                                                            {item.date}
+                                                        </span>
+                                                    </div>
+                                                    <Button
+                                                        type="text"
+                                                        style={{ paddingBottom: "7px", border: "none" }}
+                                                        icon={<BinIcon />}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            handleDelete(item.key);
                                                         }}
-                                                    >
-                                                        |
-                                                    </span>
-                                                    <span style={{
-                                                        fontWeight: 500,
-                                                        fontSize: "16px",
-                                                        padding: "17.6px 10px",
-                                                        color: "#000000"
-                                                    }}>
-                                                        {item.date}
-                                                    </span>
+                                                        danger
+                                                    />
                                                 </div>
-                                                <Button
-                                                    type="text"
-                                                    style={{ paddingBottom: "7px", border: "none" }}
-                                                    icon={<BinIcon />}
-                                                    onClick={(event) => {
-                                                        event.stopPropagation();
-                                                        handleDelete(item.key);
-                                                    }}
-                                                    danger
-                                                />
+                                            ]}
+                                        >
+                                            <div>
+                                                <span style={{
+                                                    fontWeight: 500,
+                                                    fontSize: "15px",
+                                                    padding: "17.6px 25.5px"
+                                                }}>
+                                                    {index + 1}
+                                                </span>
+                                                <span style={{
+                                                    fontWeight: 400,
+                                                    fontSize: "16px",
+                                                    padding: "17.6px 10px"
+                                                }}>
+                                                    {item.name}
+                                                </span>
                                             </div>
-                                        ]}
-                                    >
-                                        <div>
-                                            <span style={{
-                                                fontWeight: 500,
-                                                fontSize: "15px",
-                                                padding: "17.6px 25.5px"
-                                            }}>
-                                                {index + 1}
-                                            </span>
-                                            <span style={{
-                                                fontWeight: 400,
-                                                fontSize: "16px",
-                                                padding: "17.6px 10px"
-                                            }}>
-                                                {item.name}
-                                            </span>
-                                        </div>
 
-                                    </List.Item>
-                                )}
-                            />
-                            {renderDraggerArea()}
-                        </>
+                                        </List.Item>
+                                    )}
+                                />
+                                {renderDraggerArea()}
+                            </>
 
-                    )
-                    : renderDraggerArea()
-                }
-            </Upload.Dragger>
+                        )
+                        : renderDraggerArea()
+                    }
+                </Upload.Dragger>
+            </Spin>
             <div
                 style={{
                     marginTop: "24px",
