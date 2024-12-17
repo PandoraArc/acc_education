@@ -21,6 +21,7 @@ function useHome() {
         reason,
         score,
         isloading,
+        setIsLoading, 
         setReason,
         setScore,
         analyze,
