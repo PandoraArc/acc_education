@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Col, Row, Skeleton } from 'antd';
+import { Col, Row, Skeleton, Spin } from 'antd';
 import PrimaryButton from '../components/PrimaryButton';
 import PowerByIcon from '@/public/icon/PowerByIcon';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import useHome from './useHome';
 
 const HomePage = () => {
 
-  const { router, isloading, setIsLoading } = useHome();
+  const { router, isloading, setIsLoading, isSpinning, setIsSpinning } = useHome();
 
   return (
     isloading
@@ -58,7 +58,15 @@ const HomePage = () => {
                       gap: '8px'
                     }}
                   >
-                    <PrimaryButton text="เริ่มต้นใช้งาน" onClick={() => router.push('/examinationchecker')} />
+                    <Spin spinning={isSpinning} >
+                      <PrimaryButton 
+                        text="เริ่มต้นใช้งาน" 
+                        onClick={() => {
+                          setIsSpinning(true);
+                          router.push('/examinationchecker')
+                        }} 
+                      />
+                    </Spin>
                     <p
                       style={{
                         padding: '10px 18px',

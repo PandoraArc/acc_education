@@ -6,6 +6,7 @@ function useHome() {
     const [reason, setReason] = useState(null);
     const [score, setScore] = useState(null);
     const [isloading, setIsLoading] = useState(false);
+    const [isSpinning, setIsSpinning] = useState(false);
     const router = useRouter();
 
     const analyze = async (val) => {
@@ -21,6 +22,8 @@ function useHome() {
         reason,
         score,
         isloading,
+        isSpinning,
+        setIsSpinning,
         setIsLoading, 
         setReason,
         setScore,
