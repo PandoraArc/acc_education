@@ -1,0 +1,39 @@
+.buttonActive {
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+  font-weight: 700;
+  background-color: #008542;
+  color: #FFFFFF;
+  border: none;
+  width: 190px;
+  display: flex;
+  justify-content: left;
+  padding-left: 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.button {
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-weight: 400;
+    background-color: #F5FAF7;
+    color: #008542C4;
+    border: none;
+    width: 190px;
+    display: flex;
+    justify-content: left;
+    padding-left: 12px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 8px;
+    align-items: center;
+  }
+
+.button:hover {
+    background-color: #EFEFEFEF
+}
+
+.button:active {
+    background-color: #F5FAF7;
+}
