@@ -2,7 +2,7 @@
 
 import { React } from 'react';
 
-import { Layout, ConfigProvider } from 'antd';
+import { Layout, ConfigProvider, Skeleton } from 'antd';
 
 import { ExamLogoActive, ExamLogo } from '@/public/icon/ExamLogo';
 import { GraphIconActive, GraphIcon } from '@/public/icon/GraphIcon';
@@ -15,6 +15,7 @@ import SiderButton from '../components/SiderButton';
 const { Sider, Content } = Layout;
 
 function ExaminationCheckerPage() {
+  
   return (
     <ConfigProvider
       theme={{

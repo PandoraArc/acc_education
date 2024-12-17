@@ -13,6 +13,7 @@ const UploadSection = () => {
     // ]);
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const handleUpload = (info) => {
         const { file } = info;
@@ -38,6 +39,21 @@ const UploadSection = () => {
     const handleDelete = (key) => {
         setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.key !== key));
         message.success("ลบไฟล์เรียบร้อยแล้ว");
+    };
+
+    const downloadPDF = () => {
+        setIsDownloading(true);
+        setTimeout(() => {
+            let date = new Date();
+            const link = document.createElement('a');
+            link.href = '/report.pdf';
+            link.download = `report-${date.toLocaleDateString()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setIsDownloading(false);
+            message.success('Analyze report is downloaded successfully');
+        }, 2000);
     };
 
     const renderDraggerArea = () => {
@@ -281,7 +297,9 @@ const UploadSection = () => {
                         ดูคะแนนแบบเกณฑ์ทั้งหมด
                     </span>
                 </p>
-                <PrimaryButton text="ถัดไป" padding="8px 49px" />
+                <Spin spinning={isDownloading} >
+                    <PrimaryButton text="ถัดไป" padding="8px 49px" onClick={downloadPDF}/>
+                </Spin>
             </div>
         </div>
     );
