@@ -4,13 +4,15 @@ import UploadIcon from "@/public/icon/UploadIcon";
 import BinIcon from "@/public/icon/BinIcon";
 import ClipIcon from "@/public/icon/ClipIcon";
 import WarningIcon from "@/public/icon/WarnningIcon";
+import PrimaryButton from "./PrimaryButton";
 
 const UploadSection = () => {
-    const [uploadedFiles, setUploadedFiles] = useState([
-        { key: "1", name: "ข้อสอบการเงินของนายชาย", time: "11:00AM", date: "10 พ.ย. 2567", status: "ใหม่" },
-        { key: "2", name: "ข้อสอบการเงินของนางฉลา", time: "10:55AM", date: "10 พ.ย. 2567", status: "อัปโหลดแล้ว" },
-    ]);
+    // const [uploadedFiles, setUploadedFiles] = useState([
+    //     { key: "1", name: "ข้อสอบการเงินของนายชาย", time: "11:00AM", date: "10 พ.ย. 2567", status: "ใหม่" },
+    //     { key: "2", name: "ข้อสอบการเงินของนางฉลา", time: "10:55AM", date: "10 พ.ย. 2567", status: "อัปโหลดแล้ว" },
+    // ]);
 
+    const [uploadedFiles, setUploadedFiles] = useState([]);
     const handleUpload = (info) => {
         const { file } = info;
 
@@ -33,6 +35,65 @@ const UploadSection = () => {
         setUploadedFiles((prevFiles) => prevFiles.filter((file) => file.key !== key));
         message.success("ลบไฟล์เรียบร้อยแล้ว");
     };
+
+    const renderDraggerArea = () => {
+        return (
+            <div
+                style={{
+                    margin: "8px 12px 12px 12px",
+                    textAlign: "center",
+                    height: 100
+                }}
+            >
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "8px",
+                        margin: "96px"
+                    }}
+                >
+                    <ClipIcon />
+                    <p>
+                        <span
+                            style={{
+                                fontWeight: 400,
+                                fontFamily: "Outfit",
+                                fontSize: "15px",
+                                color: "#14202E66"
+                            }}
+                        >
+                            คลิกเพื่อเพิ่มไฟล์
+                        </span>
+                        <span
+                            style={{
+                                fontWeight: 400,
+                                fontFamily: "Outfit",
+                                fontSize: "12px",
+                                padding: "0 4px",
+                                color: "#B0B0B0CC"
+                            }}
+                        >
+                            หรือ
+                        </span>
+                        <span
+                            style={{
+                                fontWeight: 400,
+                                fontFamily: "Outfit",
+                                fontSize: "15px",
+                                color: "#14202E66"
+                            }}
+                        >
+                            ลากไฟล์มาได้เลย
+                        </span>
+                    </p>
+                </div>
+
+            </div>
+        )
+    }
 
     return (
         <div style={{ padding: "32px", backgroundColor: '#FBFCFE', borderRadius: "8px" }}>
@@ -79,141 +140,94 @@ const UploadSection = () => {
                 multiple
                 showUploadList={false}
                 customRequest={({ file, onSuccess }) => {
-                    setTimeout(() => onSuccess("ok"), 1000); // Simulate success upload
+                    setTimeout(() => onSuccess("ok"), 1000);
                 }}
                 onChange={handleUpload}
                 accept=".jpg,.jpeg,.png,.heic,.pdf"
                 style={{ background: "#FBFCFE", borderRadius: "8px" }}
             >
-                {/* List Component for Uploaded Files */}
-                <List
-                    dataSource={uploadedFiles}
-                    itemLayout="horizontal"
-                    style={{
-                        margin: "12px 12px 8px 12px",
-                        backgroundColor: '#FBFCFE',
-                        textAlign: "left"
-                    }}
-                    renderItem={(item, index) => (
-                        <List.Item
-                            actions={[
-                                <div
-                                    style={{ display: "flex", gap: "20px", alignItems: "center" }}
-                                >
-                                    <div>
-                                        <span style={{
-                                            fontWeight: 500,
-                                            fontSize: "16px",
-                                            padding: "17.6px 10px",
-                                            color: "#000000"
-                                        }}>
-                                            {item.time}
-                                        </span>
-                                        <span
-                                            style={{
+                {uploadedFiles.length > 0
+                    ? (
+                        <>
+                            <List
+                                dataSource={uploadedFiles}
+                                itemLayout="horizontal"
+                                style={{
+                                    margin: "12px 12px 8px 12px",
+                                    backgroundColor: '#FBFCFE',
+                                    textAlign: "left"
+                                }}
+                                renderItem={(item, index) => (
+                                    <List.Item
+                                        actions={[
+                                            <div
+                                                style={{ display: "flex", gap: "20px", alignItems: "center" }}
+                                            >
+                                                <div>
+                                                    <span style={{
+                                                        fontWeight: 500,
+                                                        fontSize: "16px",
+                                                        padding: "17.6px 10px",
+                                                        color: "#000000"
+                                                    }}>
+                                                        {item.time}
+                                                    </span>
+                                                    <span
+                                                        style={{
+                                                            fontWeight: 500,
+                                                            color: "#EBEBEB"
+                                                        }}
+                                                    >
+                                                        |
+                                                    </span>
+                                                    <span style={{
+                                                        fontWeight: 500,
+                                                        fontSize: "16px",
+                                                        padding: "17.6px 10px",
+                                                        color: "#000000"
+                                                    }}>
+                                                        {item.date}
+                                                    </span>
+                                                </div>
+                                                <Button
+                                                    type="text"
+                                                    style={{ paddingBottom: "7px", border: "none" }}
+                                                    icon={<BinIcon />}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        handleDelete(item.key);
+                                                    }}
+                                                    danger
+                                                />
+                                            </div>
+                                        ]}
+                                    >
+                                        <div>
+                                            <span style={{
                                                 fontWeight: 500,
-                                                color: "#EBEBEB"
-                                            }}
-                                        >
-                                            |
-                                        </span>
-                                        <span style={{
-                                            fontWeight: 500,
-                                            fontSize: "16px",
-                                            padding: "17.6px 10px",
-                                            color: "#000000"
-                                        }}>
-                                            {item.date}
-                                        </span>
-                                    </div>
-                                    <Button
-                                        type="text"
-                                        style={{ paddingBottom: "7px", border: "none" }}
-                                        icon={<BinIcon />}
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            handleDelete(item.key);
-                                        }}
-                                        danger
-                                    />
-                                </div>
-                            ]}
-                        >
-                            <div>
-                                <span style={{
-                                    fontWeight: 500,
-                                    fontSize: "15px",
-                                    padding: "17.6px 25.5px"
-                                }}>
-                                    {index + 1}
-                                </span>
-                                <span style={{
-                                    fontWeight: 400,
-                                    fontSize: "16px",
-                                    padding: "17.6px 10px"
-                                }}>
-                                    {item.name}
-                                </span>
-                            </div>
+                                                fontSize: "15px",
+                                                padding: "17.6px 25.5px"
+                                            }}>
+                                                {index + 1}
+                                            </span>
+                                            <span style={{
+                                                fontWeight: 400,
+                                                fontSize: "16px",
+                                                padding: "17.6px 10px"
+                                            }}>
+                                                {item.name}
+                                            </span>
+                                        </div>
 
-                        </List.Item>
-                    )}
-                />
-                <div
-                    style={{
-                        margin: "8px 12px 12px 12px",
-                        // background: "green",
-                        textAlign: "center",
-                        height: 100
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: "8px",
-                            margin: "96px"
-                        }}
-                    >
-                        <ClipIcon />
-                        <p>
-                            <span
-                                style={{
-                                    fontWeight: 400,
-                                    fontFamily: "Outfit",
-                                    fontSize: "15px",
-                                    color: "#14202E66"
-                                }}
-                            >
-                                คลิกเพื่อเพิ่มไฟล์
-                            </span>
-                            <span
-                                style={{
-                                    fontWeight: 400,
-                                    fontFamily: "Outfit",
-                                    fontSize: "12px",
-                                    padding: "0 4px",
-                                    color: "#B0B0B0CC"
-                                }}
-                            >
-                                หรือ
-                            </span>
-                            <span
-                                style={{
-                                    fontWeight: 400,
-                                    fontFamily: "Outfit",
-                                    fontSize: "15px",
-                                    color: "#14202E66"
-                                }}
-                            >
-                                ลากไฟล์มาได้เลย
-                            </span>
-                        </p>
-                    </div>
+                                    </List.Item>
+                                )}
+                            />
+                            {renderDraggerArea()}
+                        </>
 
-                </div>
+                    )
+                    : renderDraggerArea()
+                }
             </Upload.Dragger>
             <div
                 style={{
@@ -237,6 +251,7 @@ const UploadSection = () => {
                 style={{
                     marginTop: "36px",
                     display: "flex",
+                    justifyContent: "space-between",
                 }}
             >
                 <p
@@ -260,6 +275,7 @@ const UploadSection = () => {
                         ดูคะแนนแบบเกณฑ์ทั้งหมด
                     </span>
                 </p>
+                <PrimaryButton text="ถัดไป" padding="8px 49px" />
             </div>
         </div>
     );

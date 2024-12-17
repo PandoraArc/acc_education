@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { grading } from '@/api/llm';
 
 function useHome() {
     const [reason, setReason] = useState(null);
     const [score, setScore] = useState(null);
     const [isloading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const analyze = async (val) => {
         setIsLoading(true);
@@ -15,6 +17,7 @@ function useHome() {
     }
 
     return {
+        router,
         reason,
         score,
         isloading,

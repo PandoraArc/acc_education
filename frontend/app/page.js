@@ -1,8 +1,15 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
-  return (
-    <div></div>
-  );
+import { useEffect } from "react";
+import { useRouter } from 'next/navigation'
+
+export default function Page() {
+
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/home");
+  }, [router]);
+
+  return <></>
 }
