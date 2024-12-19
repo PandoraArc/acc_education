@@ -288,7 +288,7 @@ const UploadSection = () => {
                         style={{
                             fontSize: "16px",
                             fontWeight: 400,
-                            color: "#008542",
+                            color: "black",
                             textDecoration: "underline",
                             cursor: "pointer",
                             marginLeft: "16px"
